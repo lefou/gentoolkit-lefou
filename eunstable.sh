@@ -1,16 +1,26 @@
 #!/bin/bash
 
-keyword="~x86"
+# Which backend ?
+GENTOOLKIT_LEFOU_BACKEND="${GENTOOLKIT_LEFOU_BACKEND:-$(source /etc/gentoolkit-lefou.conf 2>/dev/null && echo "${GENTOOLKIT_LEFOU_BACKEND}")}"
+GENTOOLKIT_LEFOU_BACKEND="${GENTOOLKIT_LEFOU_BACKEND:-$(source ${HOME}/.gentoolkit-lefou.conf 2>/dev/null && echo "${GENTOOLKIT_LEFOU_BACKEND}")}"
+
+if [ "${GENTOOLKIT_LEFOU_BACKEND}" = "portage" ] ; then
+        CONF_UNMASK=/etc/portage/package.unmask
+        CONF_KEYWORDS=/etc/portage/package.keywords
+elif [ "${GENTOOLKIT_LEFOU_BACKEND}" = "paludis" ] ; then
+        CONF_UNMASK=/etc/paludis/package_unmask.conf
+        CONF_KEYWORDS=/etc/paludis/keywords.conf
+else
+        echo "No backend defined."
+        exit 1
+fi
+
+# Which arch
+GENTOOLKIT_LEFOU_ARCH="${GENTOOLKIT_LEFOU_ARCH:-$(source /etc/gentoolkit-lefou.conf 2>/dev/null && echo "${GENTOOLKIT_LEFOU_ARCH}")}"
+keyword="${GENTOOLKIT_LEFOU_ARCH:-~x86}"
+
 unmask=false
 unstable=false
-
-###USE_PORTAGE### # portage/emerge
-###USE_PORTAGE### CONF_KEYWORDS="/etc/portage/package.keywords"
-###USE_PORTAGE### CONF_UNMASK="/etc/portage/package.unmask"
-
-###USE_PALUDIS### # paludis
-###USE_PALUDIS### CONF_KEYWORDS="/etc/paludis/keywords.conf"
-###USE_PALUDIS### CONF_UNMASK="/etc/paludis/package_unmask.conf"
 
 if [ "$(basename $0)" == "eunstable" ]; then
     unstable=true

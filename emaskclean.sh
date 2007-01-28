@@ -3,16 +3,29 @@
 # Clean Up /etc/portage/package.unmask file
 # Copyrigth (c) by Tobias Roeser, 2005-2007
 # All rights reserved
+# $Id$
 ##############################################################
+
+echo "Do not use this app, as it is totally broken"
+exit 1
 
 PACKAGE_DB=/var/db/pkg
 ARCH="~x86"
 
-###USE_PORTAGE### UNMASK_FILE=/etc/portage/package.unmask
-###USE_PORTAGE### KEYWORDS_FILE=/etc/portage/package.keywords
+# Which backend ?
+GENTOOLKIT_LEFOU_BACKEND="${GENTOOLKIT_LEFOU_BACKEND:-$(source /etc/gentoolkit-lefou.conf 2>/dev/null && echo "${GENTOOLKIT_LEFOU_BACKEND}")}"
+GENTOOLKIT_LEFOU_BACKEND="${GENTOOLKIT_LEFOU_BACKEND:-$(source ${HOME}/.gentoolkit-lefou.conf 2>/dev/null && echo "${GENTOOLKIT_LEFOU_BACKEND}")}"
 
-###USE_PALUDIS### UNMASK_FILE=/etc/paludis/package_unmask.conf
-###USE_PALUDIS### KEYWORDS_FILE=/etc/paludis/keywords.conf
+if [ "${GENTOOLKIT_LEFOU_BACKEND}" = "portage" ] ; then
+	UNMASK_FILE=/etc/portage/package.unmask
+	KEYWORDS_FILE=/etc/portage/package.keywords
+elif [ "${GENTOOLKIT_LEFOU_BACKEND}" = "paludis" ] ; then
+	UNMASK_FILE=/etc/paludis/package_unmask.conf
+	KEYWORDS_FILE=/etc/paludis/keywords.conf
+else 
+	echo "No backend defined."
+	exit 1
+fi
 
 verbose=0
 
