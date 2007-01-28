@@ -17,7 +17,7 @@ fi
 
 # Which arch
 GENTOOLKIT_LEFOU_ARCH="${GENTOOLKIT_LEFOU_ARCH:-$(source /etc/gentoolkit-lefou.conf 2>/dev/null && echo "${GENTOOLKIT_LEFOU_ARCH}")}"
-keyword="${GENTOOLKIT_LEFOU_ARCH:-~x86}"
+keyword="~${GENTOOLKIT_LEFOU_ARCH:-x86}"
 
 unmask=false
 unstable=false
