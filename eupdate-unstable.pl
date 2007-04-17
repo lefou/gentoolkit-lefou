@@ -5,7 +5,7 @@
 # $Id$
 #
 
-VERSION=0.6.6
+my $VERSION = 0.6.7;
 
 # Which backend ?
 my $backend = `echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
