@@ -1,0 +1,33 @@
+Copy gentoolkit-lefou.conf to
+ - /etc/gentoolkit-lefou.conf or
+ - ${HOME}/.gentoolkit-lefou.conf
+
+Make sure, that the other scripts are located in a place 
+which is part of the PATH variable, e.g. /usr/sbin
+
+eunstable
+=========
+
+ - called as 'eunstable' adds the given package 
+   to you local package keywords file
+
+ - called as 'eunmask' adds the given package
+   to your local package unmask file
+
+ - called as 'efullunmask' does both actions from
+   above at once
+
+
+eupdate-unstable
+================
+
+Can be used to add package dependencies (which prevent a
+successful install operation) into the needed package
+keywork and/or unmask files. This tool uses eunstable
+to add the package atoms.
+
+
+emaskclean
+==========
+
+This is broken atm.
