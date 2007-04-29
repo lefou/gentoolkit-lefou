@@ -113,7 +113,7 @@ if( $usePaludis == 1 ) {
 else {
 	while( "$repeat" eq "yes" ) {
 
-		my @result = split( /\n/, `emerge --nocolor --pretend @ARGV`);
+		my @result = split( /\n/, `emerge --color=n --pretend @ARGV`);
 	
 		my $resultMsg = join( "\n", @result );
 		my $need_unmask = "no";

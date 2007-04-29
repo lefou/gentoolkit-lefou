@@ -5,7 +5,7 @@
 # $Id$
 #
 
-VERSION=0.6.6
+VERSION=0.6.7
 
 # Which backend ?
 GENTOOLKIT_LEFOU_BACKEND="${GENTOOLKIT_LEFOU_BACKEND:-$(source /etc/gentoolkit-lefou.conf 2>/dev/null && echo "${GENTOOLKIT_LEFOU_BACKEND}")}"
