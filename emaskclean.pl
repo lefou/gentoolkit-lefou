@@ -5,10 +5,11 @@
 # $Id$
 #
 
-my $VERSION = 0.6.8;
+my $VERSION = "0.6.8";
 my $verbose = 0;
 my $pretend = 0;
 
+$verbose && print "emaskclean $VERSION.\nCopyright (c) 2005 - 2007 by Tobias Roeser\nAll rights reserved.\n";
 
 # Which backend ?
 my $backend = `echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
@@ -85,7 +86,7 @@ else {
 	#print "\nTARGET\n------\n";
 	#print @target;
 
-	$verbose && print "Processed ", ($skipped + $removed + $passed), " lines: Passed $passed, Removed $removed, Skipped $skipped packages.\n";
+	print "Processed ", ($skipped + $removed + $passed), " lines: Passed $passed, Removed $removed, Skipped $skipped packages.\n";
 
 	if ($pretend == 0) {
 		
