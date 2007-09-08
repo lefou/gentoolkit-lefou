@@ -5,44 +5,27 @@
 # $Id$
 #
 
-my $VERSION = "0.6.8";
+use strict;
+
+my $VERSION = "0.6.8_pre1";
 my $verbose = 0;
 my $pretend = 0;
 
 $verbose && print "emaskclean $VERSION.\nCopyright (c) 2005 - 2007 by Tobias Roeser\nAll rights reserved.\n";
 
-# Which backend ?
-my $backend = `echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
+# Which backend?
+my $backend = resolveVariable("GENTOOLKIT_LEFOU_BACKEND");
 
-if( "$backend" eq "" ) {
-	$backend = `source /etc/gentoolkit-lefou.conf 2>/dev/null && echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
-}
-if( "$backend" eq "" ) {
-	$backend = `source \${HOME}/gentoolkit-lefou.conf 2>/dev/null && echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
-}
-
-my $usePaludis = 0;
-if( "$backend" eq "paludis" ) {
-	$usePaludis = 1;
-}
-else {
-	$usePaludis = 0;
-}
-
-if( $usePaludis == 1 ) {
-
-	print "No paludis support currently. Sorry."
-
-}
-else {
+if ($backend eq "portage") {
 
 	my $line = "";
 	my @target;
-	my $sourceFile = "/etc/portage/package.keywords";
+	my $sourceFile = resolveVariable("portage_PACKAGE_KEYWORDS", "/etc/portage/package.keywords");
 	my $packageDB = "/var/db/pkg";
 	my $skipped = 0;
 	my $passed = 0;
 	my $removed = 0;
+	my $isInstalled = "";
 	
 	open(FILE, "<$sourceFile") || die "could not open source file";
 	my @source = <FILE>;
@@ -86,7 +69,7 @@ else {
 	#print "\nTARGET\n------\n";
 	#print @target;
 
-	print "Processed ", ($skipped + $removed + $passed), " lines: Passed $passed, Removed $removed, Skipped $skipped packages.\n";
+	print "Processed ", ($skipped + $removed + $passed), " lines: Passed $passed, Skipped $skipped, Removed $removed packages.\n";
 
 	if ($pretend == 0) {
 		
@@ -100,3 +83,48 @@ else {
 		close(FILE);		
 	}
 }
+elsif ($backend eq "paludis") {
+	print "No paludis support currently. Sorry.\n"
+}
+else {
+	print "Unsupported backend \"$backend\"\n";
+}
+
+##############################################################################
+# Functions
+
+# Function: resolveVariable(variableName, defaultIfVariableNotSet)
+# Return: the content of the variable
+sub resolveVariable {
+
+	my $variableName = shift;
+	my $variableDefault = shift;
+	my $resolvedValue = "";
+
+	# check the environment for variable
+	$resolvedValue = `echo \"\${$variableName}\"`;
+	chomp($resolvedValue);
+
+	# next check in user's configuration
+	if ($resolvedValue eq "" ) {
+		$resolvedValue = `source \${HOME}/.gentoolkit-lefou.conf 2>/dev/null && echo \"\${$variableName}\"`;
+		chomp($resolvedValue);
+	}
+
+	# next check in global configuration
+	if ($resolvedValue eq "" ) {
+		$resolvedValue = `source /etc/gentoolkit-lefou.conf 2>/dev/null && echo \"\${$variableName}\"`;
+		chomp($resolvedValue);
+	}
+
+	if ($resolvedValue eq "") {
+		$verbose && print "Could not resolve $variableName, using default value \"$variableName\"\n";
+		$resolvedValue = $variableDefault;
+	}
+	else {
+		$verbose && print "Resolve $variableName with \"$resolvedValue\"\n";
+	}
+
+	return($resolvedValue);
+}
+
