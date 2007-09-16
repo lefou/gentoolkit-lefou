@@ -61,7 +61,7 @@ for package in $*; do
     fi
 
     if [ $nokeyword == true ]; then
-	echo ">>> Adding \"=$package $keyword\" to ${CONF_KEYWORDS}"
+	echo ">>> Adding \"=$package **\" to ${CONF_KEYWORDS}"
 	cp ${CONF_KEYWORDS} ${CONF_KEYWORDS}.enokeyword
 	echo "=$package **" >> ${CONF_KEYWORDS}
     fi
