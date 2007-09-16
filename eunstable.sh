@@ -5,7 +5,7 @@
 # $Id$
 #
 
-VERSION=0.6.7
+VERSION=0.6.8
 
 # Which backend ?
 GENTOOLKIT_LEFOU_BACKEND="${GENTOOLKIT_LEFOU_BACKEND:-$(source /etc/gentoolkit-lefou.conf 2>/dev/null && echo "${GENTOOLKIT_LEFOU_BACKEND}")}"
@@ -28,6 +28,7 @@ keyword="~${GENTOOLKIT_LEFOU_ARCH:-x86}"
 
 unmask=false
 unstable=false
+nokeyword=false
 
 if [ "$(basename $0)" == "eunstable" ]; then
     unstable=true
@@ -36,9 +37,11 @@ elif [ "$(basename $0)" == "eunmask" ]; then
 elif [ "$(basename $0)" == "efullunmask" ]; then
     unmask=true
     unstable=true
+elif [ "$(basename $0)" == "enokeyword" ]; then
+    nokeyword=true
 else
     echo "!!! Wrong call"
-    echo "!!! this script must be called \"eunstable\", \"eunmask\" or \"efullunmask\""
+    echo "!!! this script must be called \"eunstable\", \"eunmask\", \"efullunmask\" or \"enokeyword\""
     echo "!!! Abort"
     exit 1
 fi
@@ -57,4 +60,11 @@ for package in $*; do
 	echo "=$package $keyword" >> ${CONF_KEYWORDS}
     fi
 
+    if [ $nokeyword == true ]; then
+	echo ">>> Adding \"=$package $keyword\" to ${CONF_KEYWORDS}"
+	cp ${CONF_KEYWORDS} ${CONF_KEYWORDS}.enokeyword
+	echo "=$package **" >> ${CONF_KEYWORDS}
+    fi
+
 done
+
