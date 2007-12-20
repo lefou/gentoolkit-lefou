@@ -5,7 +5,7 @@
 # $Id$
 #
 
-my $VERSION = "0.6.7";
+my $VERSION = "0.6.8_pre2";
 
 # Which backend ?
 my $backend = `echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
@@ -160,6 +160,10 @@ else {
 						print "      --> auto-unmask this package\n\n";
 						print `eunmask $1`, "\n";
 					}
+					elsif( $options[0] =~ /^(.*) \(masked by: missing keyword\)\s*$/ ) {
+						print "      --> auto-unmask this package\n\n";
+						print `enokeyword $1`, "\n";
+					}
 				}
 			else {	
 				# Let the user decide, which package to unmask
@@ -176,6 +180,9 @@ else {
 					}
 					elsif( $options[$package_to_unmask - 1] =~ /^(.*) \(masked by: package.mask\)\s*$/ ) {
 						print `eunmask $1`, "\n";
+					}
+					elsif( $options[$package_to_unmask - 1] =~ /^(.*) \(masked by: missing keyword\)\s*$/ ) {
+						print `enokeyword $1`, "\n";
 					}
 					else {
 						print "!!! Not suported yet.\n";
