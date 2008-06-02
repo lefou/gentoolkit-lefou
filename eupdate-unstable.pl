@@ -164,7 +164,7 @@ else {
 						print "      --> auto-unmask this package\n\n";
 						print `enokeyword $1`, "\n";
 					}
-					elsif( $options[0] =~ /^(.*) \(masked by: missing keyword, package.mask\)\s*$/ ) {
+					elsif( $options[0] =~ /^(.*) \(masked by: package.mask, missing keyword\)\s*$/ ) {
 						print "      --> auto-unmask this package\n\n";
 						print `eunmask $1`;
 						print `enokeyword $1`, "\n";
