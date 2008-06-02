@@ -1,3 +1,6 @@
+gentoolkit 0.6.8_pre3:
+   * Support more combinations with 'missing keywords' in eupdate-unstable
+
 gentoolkit 0.6.8_pre2:
    * Added support for 'missing keywords' in eupdate-unstable
 
