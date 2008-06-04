@@ -7,7 +7,7 @@
 
 use strict;
 
-my $VERSION = "0.6.8_pre1";
+my $VERSION = "0.6.8_pre3";
 my $verbose = 0;
 my $pretend = 0;
 
@@ -17,17 +17,52 @@ $verbose && print "emaskclean $VERSION.\nCopyright (c) 2005 - 2007 by Tobias Roe
 my $backend = resolveVariable("GENTOOLKIT_LEFOU_BACKEND");
 
 if ($backend eq "portage") {
+	cleanPackageForPortage("keywords");
+	cleanPackageForPortage("unmask");
+}
+elsif ($backend eq "paludis") {
+	print "No paludis support currently. Sorry.\n"
+}
+else {
+	print "Unsupported backend \"$backend\"\n";
+}
+
+##############################################################################
+# Functions
+
+sub cleanPackageForPortage {
+
+	my $type = shift;
+	my $unmaskMode = 1;
+	
+	if ($type eq "keywords") {
+		$unmaskMode = 0;
+	}
+	elsif ($type eq "unmask") {
+		$unmaskMode = 1;
+	}
+	else {
+		print "Unsupported clean method.\n";
+		return -1;
+	}
+
+	print "Cleaning $type...\n";
 
 	my $line = "";
 	my @target;
-	my $sourceFile = resolveVariable("portage_PACKAGE_KEYWORDS", "/etc/portage/package.keywords");
+	my $sourceFile = "";
+	if ($unmaskMode == 1) {
+		$sourceFile = resolveVariable("portage_PACKAGE_UNMASK", "/etc/portage/package.unmask");
+	} else {
+		$sourceFile = resolveVariable("portage_PACKAGE_KEYWORDS", "/etc/portage/package.keywords");
+	}
 	my $packageDB = "/var/db/pkg";
 	my $skipped = 0;
 	my $passed = 0;
 	my $removed = 0;
 	my $isInstalled = "";
 	
-	open(FILE, "<$sourceFile") || die "could not open source file";
+	open(FILE, "<$sourceFile") || die "could not open source file «$sourceFile»";
 	my @source = <FILE>;
 	close(FILE);
 	
@@ -37,22 +72,37 @@ if ($backend eq "portage") {
 			my $package = $1;
 			my $keyword = $2;
 			
-			if ($keyword =~ /~x86|[*][*]/) {
-				# check
-				$isInstalled = `[ -d "$packageDB/$package" ] && echo "yes" || echo "no" `;
-				if($isInstalled =~ /no/) {
-					$removed++;
-					$removeThisLine = 1;
-					print "Remove package '$package' with keyword '$keyword'\n";
+			if ($unmaskMode == 1) {
+				# unmask mode
+					$isInstalled = `[ -d "$packageDB/$package" ] && echo "yes" || echo "no" `;
+					if($isInstalled =~ /no/) {
+						$removed++;
+						$removeThisLine = 1;
+						print "Remove package '$package'\n";
+					}
+					else {
+						$passed++;
+						$verbose && print "Pass package '$package'\n";
+					}
+			}
+			else { 
+				if($keyword =~ /~x86|[*][*]/) {
+					# check
+					$isInstalled = `[ -d "$packageDB/$package" ] && echo "yes" || echo "no" `;
+					if($isInstalled =~ /no/) {
+						$removed++;
+						$removeThisLine = 1;
+						print "Remove package '$package' with keyword '$keyword'\n";
+					}
+					else {
+						$passed++;
+						$verbose && print "Pass package '$package' with keyword '$keyword'\n";
+					}
 				}
 				else {
-					$passed++;
-					$verbose && print "Pass package '$package' with keyword '$keyword'\n";
+					$skipped++;
+					$verbose && print "Skipping keyword '$keyword'\n";
 				}
-			}
-			else {
-				$skipped++;
-				$verbose && print "Skipping keyword '$keyword'\n";
 			}
 		}
 		else {
@@ -82,16 +132,9 @@ if ($backend eq "portage") {
 		print FILE @target;
 		close(FILE);		
 	}
-}
-elsif ($backend eq "paludis") {
-	print "No paludis support currently. Sorry.\n"
-}
-else {
-	print "Unsupported backend \"$backend\"\n";
-}
 
-##############################################################################
-# Functions
+	return 0;
+}
 
 # Function: resolveVariable(variableName, defaultIfVariableNotSet)
 # Return: the content of the variable
