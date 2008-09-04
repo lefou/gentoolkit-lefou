@@ -213,6 +213,15 @@ else {
 		else {
 			print "!!! Nothing to unmask\n";
 			$repeat = "no";
+			print "\nDo you want to run emerge now? [y/N] ";
+			my $emerge = "n";
+                        seek( STDIN, 0, 2 );
+                        read( STDIN, $emerge, 2 );
+                        print "\n";
+			if( $emerge =~ /^y|Y$/ ) {
+				exec ("emerge", @ARGV);
+			}
+
 		}
 	}
 
