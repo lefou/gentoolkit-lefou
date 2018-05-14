@@ -7,15 +7,13 @@
 
 my $VERSION = "0.6.8_pre3";
 
-# Which backend ?
-my $backend = `echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
+# Which backend?
+my $backend = resolveVariable("GENTOOLKIT_LEFOU_BACKEND");
 
-if( "$backend" eq "" ) {
-	$backend = `source /etc/gentoolkit-lefou.conf 2>/dev/null && echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
-}
-if( "$backend" eq "" ) {
-	$backend = `source \${HOME}/gentoolkit-lefou.conf 2>/dev/null && echo \"\${GENTOOLKIT_LEFOU_BACKEND}\"`;
-}
+# Which arch ?
+my $arch = resolveVariable("GENTOOLKIT_LEFOU_ARCH");
+
+print "using arch: $arch\n";
 
 my $repeat = "yes";
 my $auto = "no";
@@ -66,9 +64,11 @@ if( $usePaludis == 1 ) {
 				print "!!! No package found to unmask\n";
 			}
 			elsif( $count ==1 && "$auto" eq "yes" ) {
-					if( $options[0] =~ /^([^\s]+): Masked by keyword \(.*~x86/ ) {
-						print "      --> auto-unmask this package\n\n";
-						print `eunstable $1`, "\n";
+					if( $options[0] =~ /^([^\s]+): Masked by keyword \(.*~([a-zA-Z0-9]+?)/ ) {
+						if($2 eq $arch) {
+							print "      --> auto-unmask this package\n\n";
+							print `eunstable $1`, "\n";
+						}
 					}
 					if( $options[0] =~ /^([^\s]*): .*repository mask/ ) {
 						print "      --> auto-unmask this package\n\n";
@@ -83,9 +83,11 @@ if( $usePaludis == 1 ) {
 				print "\n";
 				if( $package_to_unmask =~ /^\d+$/ && $package_to_unmask > 0 && $package_to_unmask <= $count ) {
 					my $handled = 0;
-					if( $options[$package_to_unmask - 1] =~ /^([^\s]+): Masked by keyword \(.*~x86/ ) {
-						print `eunstable $1`;
-						$handled++;
+					if( $options[$package_to_unmask - 1] =~ /^([^\s]+): Masked by keyword \(.*~([a-zA-Z0-9]+?)/ ) {
+						if($2 eq $arch) {
+							print `eunstable $1`;
+							$handled++;
+						}
 					}
 					if( $options[$package_to_unmask - 1] =~ /^([^\s]*): .*repository mask/ ) {
 						print `eunmask $1`;
@@ -148,13 +150,17 @@ else {
 				print "!!! No package found to unmask\n";
 			}
 			elsif( $count ==1 && "$auto" eq "yes" ) {
-					if( $options[0] =~ /^(.*) \(masked by: ~x86 keyword\)\s*$/ ) {
-						print "      --> auto-unmask this package\n\n";
-						print `eunstable $1`, "\n";
+					if( $options[0] =~ /^(.*) \(masked by: ~([a-zA-Z0-9]+?) keyword\)\s*$/ ) {
+						if($2 eq $arch) {
+							print "      --> auto-unmask this package\n\n";
+							print `eunstable $1`, "\n";
+						}
 					}
-					elsif( $options[0] =~ /^(.*) \(masked by: package.mask, ~x86 keyword\)\s*$/ ) {
-						print "      --> auto-unmask this package\n\n";
-						print `efullunmask $1`, "\n";
+					elsif( $options[0] =~ /^(.*) \(masked by: package.mask, ~([a-zA-Z0-9]+?) keyword\)\s*$/ ) {
+						if($2 eq $arch) {
+							print "      --> auto-unmask this package\n\n";
+							print `efullunmask $1`, "\n";
+						}
 					}
 					elsif( $options[0] =~ /^(.*) \(masked by: package.mask\)\s*$/ ) {
 						print "      --> auto-unmask this package\n\n";
@@ -177,11 +183,15 @@ else {
 				read( STDIN, $package_to_unmask, 2 );
 				print "\n";
 				if( $package_to_unmask =~ /^\d+$/ && $package_to_unmask > 0 && $package_to_unmask <= $count ) {
-					if( $options[$package_to_unmask - 1] =~ /^(.*) \(masked by: ~x86 keyword\)\s*$/ ) {
-						print `eunstable $1`, "\n";
+					if( $options[$package_to_unmask - 1] =~ /^(.*) \(masked by: ~([a-zA-Z0-9]+?) keyword\)\s*$/ ) {
+						if($2 eq $arch) {
+							print `eunstable $1`, "\n";
+						}
 					}
-					elsif( $options[$package_to_unmask - 1] =~ /^(.*) \(masked by: package.mask, ~x86 keyword\)\s*$/ ) {
-						print `efullunmask $1`, "\n";
+					elsif( $options[$package_to_unmask - 1] =~ /^(.*) \(masked by: package.mask, ~([a-zA-Z0-9]+?) keyword\)\s*$/ ) {
+						if($2 eq $arch) {
+							print `efullunmask $1`, "\n";
+						}
 					}
 					elsif( $options[$package_to_unmask - 1] =~ /^(.*) \(masked by: package.mask\)\s*$/ ) {
 						print `eunmask $1`, "\n";
@@ -226,3 +236,39 @@ else {
 	}
 
 }
+
+# Function: resolveVariable(variableName, defaultIfVariableNotSet)
+# Return: the content of the variable
+sub resolveVariable {
+
+        my $variableName = shift;
+        my $variableDefault = shift;
+        my $resolvedValue = "";
+
+        # check the environment for variable
+        $resolvedValue = `echo \"\${$variableName}\"`;
+        chomp($resolvedValue);
+
+        # next check in user's configuration
+        if ($resolvedValue eq "" ) {
+                $resolvedValue = `source \${HOME}/.gentoolkit-lefou.conf 2>/dev/null && echo \"\${$variableName}\"`;
+                chomp($resolvedValue);
+        }
+
+        # next check in global configuration
+        if ($resolvedValue eq "" ) {
+                $resolvedValue = `source /etc/gentoolkit-lefou.conf 2>/dev/null && echo \"\${$variableName}\"`;
+                chomp($resolvedValue);
+        }
+
+        if ($resolvedValue eq "") {
+                $verbose && print "Could not resolve $variableName, using default value \"$variableName\"\n";
+                $resolvedValue = $variableDefault;
+        }
+        else {
+                $verbose && print "Resolve $variableName with \"$resolvedValue\"\n";
+        }
+
+        return($resolvedValue);
+}
+

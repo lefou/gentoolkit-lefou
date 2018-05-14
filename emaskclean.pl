@@ -7,7 +7,7 @@
 
 use strict;
 
-my $VERSION = "0.6.8_pre3";
+my $VERSION = "0.6.8_pre4";
 my $verbose = 0;
 my $pretend = 0;
 
@@ -71,6 +71,9 @@ sub cleanPackageForPortage {
 		if ($line =~ /^=([^\s]+)\s*(.*)$/) {
 			my $package = $1;
 			my $keyword = $2;
+			if($package =~ /(.*)::.+$/) {
+				$package = $1;
+			}
 			
 			if ($unmaskMode == 1) {
 				# unmask mode
@@ -86,7 +89,7 @@ sub cleanPackageForPortage {
 					}
 			}
 			else { 
-				if($keyword =~ /~x86|[*][*]/) {
+				if($keyword =~ /~[a-zA-Z0-9]+|[*][*]/) {
 					# check
 					$isInstalled = `[ -d "$packageDB/$package" ] && echo "yes" || echo "no" `;
 					if($isInstalled =~ /no/) {
